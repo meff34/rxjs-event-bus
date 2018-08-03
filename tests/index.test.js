@@ -1,4 +1,5 @@
 import { Bus } from '../src/index'
+import { merge } from 'rxjs'
 
 const getInstance = settings => new Bus(settings)
 
@@ -22,6 +23,40 @@ test('creates stream after emit', () => {
 
   expect(bus._streams.get('trading_signals:add'))
     .not.toBeUndefined()
+})
+
+test('is not emit without subscriber throuth \'select(...)\'', () => {
+  const subscriber = jest.fn()
+  const bus = getInstance()
+
+  bus.emit({type: 'trading_signals:add', payload: 1})
+
+  bus.select('trading_signals:add').subscribe(subscriber)
+
+  expect(subscriber).not.toBeCalled()
+})
+
+test('is not emit without subscriber throuth \'getMainStream(...)\'', () => {
+  const subscriber = jest.fn()
+  const bus = getInstance()
+
+  bus.emit({type: 'trading_signals:add', payload: 1})
+
+  bus.getMainStream().subscribe(subscriber)
+
+  expect(subscriber).not.toBeCalled()
+})
+
+test('emit without subscriber throuth \'getMainStream(...)\' and with history', () => {
+  const subscriber = jest.fn()
+  const bus = getInstance(new Map([['event', 1]]))
+
+  bus.emit({type: 'event', payload: 1})
+  bus.emit({type: 'event', payload: 2})
+
+  bus.getMainStream().subscribe(subscriber)
+
+  expect(subscriber).toHaveBeenCalledTimes(1)
 })
 
 test('can not emit throuth \'select(...)\'', () => {
@@ -102,15 +137,18 @@ test('with historySettings receives data from past on subscribe to \'getMainStre
 
   const subscriber = jest.fn();
 
+  bus.emit({type: 'trading_signals:add', payload: 1})
+  bus.emit({type: 'trading_signals:add', payload: 2})
+
+  bus.emit({type: 'trading_signals:remove', payload: 1})
+  bus.emit({type: 'trading_signals:remove', payload: 2})
+  bus.emit({type: 'trading_signals:remove', payload: 3})
+
+  bus.emit({type: 'event', payload: 1})
+
   bus
     .getMainStream()
     .subscribe(subscriber)
-
-  bus.emit({type: 'trading_signals:add', payload: 1})
-  bus.emit({type: 'trading_signals:remove', payload: 1})
-  bus.emit({type: 'trading_signals:remove', payload: 1})
-
-
 
   expect(subscriber).toHaveBeenCalledTimes(3)
 })
@@ -132,10 +170,19 @@ test('with historySettings receives data from past on subscribe to \'select()\''
     })
 })
 
+test('streams can be merged', () => {
+  const subscriber = jest.fn()
+  const bus = getInstance()
+  const TSAddStream = bus.select('trading_signals:add')
+  const TSRemoveStream = bus.select('trading_signals:remove')
 
+  merge(
+    TSAddStream,
+    TSRemoveStream
+  ).subscribe(subscriber)
 
+  bus.emit({type: 'trading_signals:add', payload: 1})
+  bus.emit({type: 'trading_signals:remove', payload: 1})
 
-
-
-
-
+  expect(subscriber).toHaveBeenCalledTimes(2)
+})

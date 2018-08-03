@@ -17,8 +17,7 @@ export class Bus {
   _streams: Map<EventType, Subject> = new Map()
 
   constructor(historySettings?: BusHistorySettings) {
-    this._subjectsEmitter = (new Subject()).pipe(mergeAll())
-    // this._subjectsEmitter = (new ReplaySubject()).pipe(mergeAll())
+    this._subjectsEmitter = (new ReplaySubject()).pipe(mergeAll())
 
     if (historySettings) {
       this._initReplaySubjects(historySettings)
