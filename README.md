@@ -109,8 +109,40 @@ console output:
 ```
 
 ### main stream with history
-```
-not ready yet 😟
+```javascript
+const historySettings = new Map([
+  ['first_event_name', 2],
+  ['second_event_name', 1]
+])
+
+const bus = new Bus(historySettings)
+
+bus.emit({ type: 'first_event_name', payload: 1 })
+bus.emit({ type: 'first_event_name', payload: 2 })
+bus.emit({ type: 'first_event_name', payload: 3 })
+
+bus.emit({ type: 'second_event_name', payload: 1 })
+bus.emit({ type: 'second_event_name', payload: 2 })
+bus.emit({ type: 'second_event_name', payload: 3 })
+
+
+bus
+  .getMainStream()
+  .subscribe(log)
+
+bus.emit({ type: 'first_event_name', payload: 4 })
+bus.emit({ type: 'second_event_name', payload: 4 })
+
+/*
+console output:
+
+1: type: first_event_name, value: 2
+2: type: first_event_name, value: 3
+3: type: second_event_name, value: 3
+4: type: first_event_name, value: 4
+5: type: second_event_name, value: 4
+*/
+
 ```
 
 
