@@ -31,9 +31,9 @@ test('can not emit throuth \'select(...)\'', () => {
   expect(() => observable.emit({type: 'event', payload: 1})).toThrow()
 })
 
-test('can not emit throuth \'read()\'', () => {
+test('can not emit throuth \'getMainStream()\'', () => {
   const bus = getInstance()
-  const observable = bus.read()
+  const observable = bus.getMainStream()
 
   expect(() => observable.emit({type: 'event', payload: 1})).toThrow()
 })
@@ -53,11 +53,11 @@ test('receive data on subscribe', done => {
   bus.emit(event)
 })
 
-test('receives data from several streams throuth \'read()\'', () => {
+test('receives data from several streams throuth \'getMainStream()\'', () => {
   const bus = getInstance()
   const subscriber = jest.fn();
 
-  bus.read()
+  bus.getMainStream()
     .subscribe(subscriber)
 
   bus.emit({type: 'trading_signals:add', payload: 1})
@@ -66,17 +66,17 @@ test('receives data from several streams throuth \'read()\'', () => {
   expect(subscriber).toHaveBeenCalledTimes(2)
 })
 
-test('receives data from several streams throuth \'read()\' after creation of new stream', () => {
+test('receives data from several streams throuth \'getMainStream()\' after creation of new stream', () => {
   const bus = getInstance()
   const firstSubscriber = jest.fn();
   const secondSubscriber = jest.fn();
 
-  bus.read()
+  bus.getMainStream()
     .subscribe(firstSubscriber)
 
   bus.emit({type: 'trading_signals:add', payload: 1})
 
-  bus.read()
+  bus.getMainStream()
     .subscribe(secondSubscriber)
 
   bus.emit({type: 'trading_signals:remove', payload: 1})
@@ -94,7 +94,7 @@ test('historySettings setup streams', () => {
   expect(bus._streams.size).toBe(2)
 })
 
-test('with historySettings receives data from past on subscribe to \'read()\'', () => {
+test('with historySettings receives data from past on subscribe to \'getMainStream()\'', () => {
   const bus = getInstance(new Map([
     ['trading_signals:remove', 2],
     ['trading_signals:add', 1]
@@ -103,7 +103,7 @@ test('with historySettings receives data from past on subscribe to \'read()\'', 
   const subscriber = jest.fn();
 
   bus
-    .read()
+    .getMainStream()
     .subscribe(subscriber)
 
   bus.emit({type: 'trading_signals:add', payload: 1})
