@@ -7,7 +7,7 @@
     "build": "babel src -d lib -s --presets=flow,latest,stage-0",
     "babel-node": "babel-node --presets=flow,latest,stage-0",
     "start": "nodemon --exec npm run babel-node -- ./src/index.js",
-    "test": "jest"
+    "test": "jest --watch"
   },
   "keywords": [],
   "author": "",

@@ -30,7 +30,7 @@ export class Bus {
     return this._streams.get(type).asObservable()
   }
 
-  read() {
+  getMainStream() {
     return this._subjectsEmitter.asObservable();
   }
 
