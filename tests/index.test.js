@@ -1,5 +1,6 @@
 import { Bus } from '../src/index'
 import { merge } from 'rxjs'
+import { skip } from 'rxjs/operators';
 
 const getInstance = settings => new Bus(settings)
 
@@ -185,4 +186,20 @@ test('streams can be merged', () => {
   bus.emit({type: 'trading_signals:remove', payload: 1})
 
   expect(subscriber).toHaveBeenCalledTimes(2)
+})
+
+test('we can take from history what we want', () => {
+  const subscriber = jest.fn()
+  const bus = getInstance(new Map([
+    ['event', 2]
+  ]))
+
+  bus.emit({type: 'event', payload: 1})
+  bus.emit({type: 'event', payload: 2})
+
+  bus
+    .select('event', { historyLength: 1 })
+    .subscribe(subscriber)
+
+  expect(subscriber).toHaveBeenCalledTimes(1)
 })

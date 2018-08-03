@@ -1,7 +1,7 @@
 // @flow
 
 import { Subject, Observable, ReplaySubject } from 'rxjs'
-import { mergeAll } from 'rxjs/operators';
+import { mergeAll, skip } from 'rxjs/operators';
 
 type EventType = 'trading_signals:add' | 'trading_signals:remove' | 'event'
 
@@ -15,18 +15,26 @@ type BusHistorySettings = Map<EventType, number>
 export class Bus {
   _subjectsEmitter: Subject
   _streams: Map<EventType, Subject> = new Map()
+  _historySettings: BusHistorySettings
 
   constructor(historySettings?: BusHistorySettings) {
     this._subjectsEmitter = (new ReplaySubject()).pipe(mergeAll())
+    this._historySettings = historySettings
 
     if (historySettings) {
       this._initReplaySubjects(historySettings)
     }
   }
 
-  select(type: EventType): Observable {
+  select(type: EventType, settings?: {historyLength: number}): Observable {
     this._createStreamIfNotExists(type)
-    return this._streams.get(type).asObservable()
+    let observable = this._streams.get(type).asObservable()
+
+    if (settings && settings.historyLength) {
+      observable = observable.pipe(skip(this._historySettings.get(type) - settings.historyLength))
+    }
+
+    return observable
   }
 
   getMainStream() {
