@@ -10,18 +10,17 @@ test('construct', () => {
 test('creates stream after select', () => {
   const bus = getInstance()
 
-  bus.select('trading_signals:add')
-    .subscribe(e => console.log('add', e, '\n'))
+  bus.select('event:type_1')
 
-  expect(bus._streams.get('trading_signals:add')).not.toBeUndefined()
+  expect(bus._streams.get('event:type_1')).not.toBeUndefined()
 })
 
 test('creates stream after emit', () => {
   const bus = getInstance()
 
-  bus.emit({type: 'trading_signals:add', payload: 1})
+  bus.emit({type: 'event:type_1', payload: 1})
 
-  expect(bus._streams.get('trading_signals:add'))
+  expect(bus._streams.get('event:type_1'))
     .not.toBeUndefined()
 })
 
@@ -29,9 +28,9 @@ test('is not emit without subscriber throuth \'select(...)\'', () => {
   const subscriber = jest.fn()
   const bus = getInstance()
 
-  bus.emit({type: 'trading_signals:add', payload: 1})
+  bus.emit({type: 'event:type_1', payload: 1})
 
-  bus.select('trading_signals:add').subscribe(subscriber)
+  bus.select('event:type_1').subscribe(subscriber)
 
   expect(subscriber).not.toBeCalled()
 })
@@ -40,7 +39,7 @@ test('is not emit without subscriber throuth \'getMainStream(...)\'', () => {
   const subscriber = jest.fn()
   const bus = getInstance()
 
-  bus.emit({type: 'trading_signals:add', payload: 1})
+  bus.emit({type: 'event:type_1', payload: 1})
 
   bus.getMainStream().subscribe(subscriber)
 
@@ -76,10 +75,10 @@ test('can not emit throuth \'getMainStream()\'', () => {
 test('receive data on subscribe', done => {
   const bus = getInstance()
 
-  const event = {type: 'trading_signals:add', payload: 1}
+  const event = {type: 'event:type_1', payload: 1}
 
   bus
-    .select('trading_signals:add')
+    .select('event:type_1')
     .subscribe(e => {
       expect(e).toEqual(event)
       done()
@@ -95,8 +94,8 @@ test('receives data from several streams throuth \'getMainStream()\'', () => {
   bus.getMainStream()
     .subscribe(subscriber)
 
-  bus.emit({type: 'trading_signals:add', payload: 1})
-  bus.emit({type: 'trading_signals:remove', payload: 1})
+  bus.emit({type: 'event:type_1', payload: 1})
+  bus.emit({type: 'event:type_2', payload: 1})
 
   expect(subscriber).toHaveBeenCalledTimes(2)
 })
@@ -109,12 +108,12 @@ test('receives data from several streams throuth \'getMainStream()\' after creat
   bus.getMainStream()
     .subscribe(firstSubscriber)
 
-  bus.emit({type: 'trading_signals:add', payload: 1})
+  bus.emit({type: 'event:type_1', payload: 1})
 
   bus.getMainStream()
     .subscribe(secondSubscriber)
 
-  bus.emit({type: 'trading_signals:remove', payload: 1})
+  bus.emit({type: 'event:type_2', payload: 1})
 
   expect(firstSubscriber).toHaveBeenCalledTimes(2);
   expect(secondSubscriber).toHaveBeenCalledTimes(1);
@@ -122,8 +121,8 @@ test('receives data from several streams throuth \'getMainStream()\' after creat
 
 test('historySettings setup streams', () => {
   const bus = getInstance(new Map([
-    ['trading_signals:remove', 1],
-    ['trading_signals:add', 1000]
+    ['event:type_2', 1],
+    ['event:type_1', 1000]
   ]))
 
   expect(bus._streams.size).toBe(2)
@@ -131,18 +130,18 @@ test('historySettings setup streams', () => {
 
 test('with historySettings receives data from past on subscribe to \'getMainStream()\'', () => {
   const bus = getInstance(new Map([
-    ['trading_signals:remove', 2],
-    ['trading_signals:add', 1]
+    ['event:type_2', 2],
+    ['event:type_1', 1]
   ]))
 
   const subscriber = jest.fn();
 
-  bus.emit({type: 'trading_signals:add', payload: 1})
-  bus.emit({type: 'trading_signals:add', payload: 2})
+  bus.emit({type: 'event:type_1', payload: 1})
+  bus.emit({type: 'event:type_1', payload: 2})
 
-  bus.emit({type: 'trading_signals:remove', payload: 1})
-  bus.emit({type: 'trading_signals:remove', payload: 2})
-  bus.emit({type: 'trading_signals:remove', payload: 3})
+  bus.emit({type: 'event:type_2', payload: 1})
+  bus.emit({type: 'event:type_2', payload: 2})
+  bus.emit({type: 'event:type_2', payload: 3})
 
   bus.emit({type: 'event', payload: 1})
 
@@ -155,15 +154,15 @@ test('with historySettings receives data from past on subscribe to \'getMainStre
 
 test('with historySettings receives data from past on subscribe to \'select()\'', done => {
   const bus = getInstance(new Map([
-    ['trading_signals:remove', 1]
+    ['event:type_2', 1]
   ]))
 
-  const event = {type: 'trading_signals:remove', payload: 1}
+  const event = {type: 'event:type_2', payload: 1}
 
-  bus.emit({type: 'trading_signals:remove', payload: 1})
+  bus.emit({type: 'event:type_2', payload: 1})
 
   bus
-    .select('trading_signals:remove')
+    .select('event:type_2')
     .subscribe(e => {
       expect(e).toEqual(event)
       done()
@@ -173,16 +172,16 @@ test('with historySettings receives data from past on subscribe to \'select()\''
 test('streams can be merged', () => {
   const subscriber = jest.fn()
   const bus = getInstance()
-  const TSAddStream = bus.select('trading_signals:add')
-  const TSRemoveStream = bus.select('trading_signals:remove')
+  const TSAddStream = bus.select('event:type_1')
+  const TSRemoveStream = bus.select('event:type_2')
 
   merge(
     TSAddStream,
     TSRemoveStream
   ).subscribe(subscriber)
 
-  bus.emit({type: 'trading_signals:add', payload: 1})
-  bus.emit({type: 'trading_signals:remove', payload: 1})
+  bus.emit({type: 'event:type_1', payload: 1})
+  bus.emit({type: 'event:type_2', payload: 1})
 
   expect(subscriber).toHaveBeenCalledTimes(2)
 })
