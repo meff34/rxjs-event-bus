@@ -197,8 +197,24 @@ test('we can take from history what we want', () => {
   bus.emit({type: 'event', payload: 2})
 
   bus
-    .select('event', { historyLength: 1 })
+    .select('event', 1)
     .subscribe(subscriber)
 
   expect(subscriber).toHaveBeenCalledTimes(1)
+})
+
+test('slicing of all history of ReplayStream throught \'select(...)\'', () => {
+  const subscriber = jest.fn()
+  const bus = getInstance(new Map([
+    ['event', 2]
+  ]))
+
+  bus.emit({type: 'event', payload: 1})
+  bus.emit({type: 'event', payload: 2})
+
+  bus
+    .select('event', 0)
+    .subscribe(subscriber)
+
+  expect(subscriber).not.toBeCalled()
 })

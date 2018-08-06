@@ -162,6 +162,44 @@ console output:
 
 ```
 
+### Погоди, а если мне не нужны все события из прошлого?
+Просто передавай в `select()` вторым аргументом, сколько именно событий из прошлого тебе нужно
+
+```javascript
+const historySettings = new Map([
+  ['first_event_name', 2],
+  ['second_event_name', 1],
+])
+
+const bus = new Bus(historySettings)
+
+bus.emit({ type: 'first_event_name', payload: 1 })
+bus.emit({ type: 'first_event_name', payload: 2 })
+bus.emit({ type: 'first_event_name', payload: 3 })
+
+bus.emit({ type: 'second_event_name', payload: 1 })
+
+bus
+  .select('first_event_name', 1)
+  .subscribe(log)
+
+bus
+  .select('second_event_name', 0)
+  .subscribe(log)
+
+bus.emit({ type: 'first_event_name', payload: 4 })
+bus.emit({ type: 'second_event_name', payload: 2 })
+
+/*
+console output:
+
+1. type: first_event_name, payload: 3
+2. type: first_event_name, payload: 4
+3. type: second_event_name, payload: 2
+*/
+
+```
+
 ## Окей, а что мне делать, если я хочу поиграться с этим своими руками?
 
 Клонируй и запускай тесты

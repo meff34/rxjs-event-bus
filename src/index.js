@@ -1,6 +1,6 @@
 // @flow
 
-import { Subject, Observable, ReplaySubject } from 'rxjs'
+import { Subject, Observable, ReplaySubject, iif } from 'rxjs'
 import { mergeAll, skip } from 'rxjs/operators';
 
 type EventType = 'event:type_1' | 'event:type_2'
@@ -19,38 +19,48 @@ export class Bus {
 
   constructor(historySettings?: BusHistorySettings) {
     this._subjectsEmitter = (new ReplaySubject()).pipe(mergeAll())
-    this._historySettings = historySettings
+    this._historySettings = historySettings || new Map()
 
     if (historySettings) {
       this._initReplaySubjects(historySettings)
     }
   }
 
-  select(type: EventType, settings?: {historyLength: number}): Observable {
-    this._createStreamIfNotExists(type)
-    let observable = this._streams.get(type).asObservable()
+  select(type: EventType, sliceCount?: number): Observable {
+    const currentStream = this._selectStream(type)
 
-    if (settings && settings.historyLength) {
-      observable = observable.pipe(skip(this._historySettings.get(type) - settings.historyLength))
-    }
-
-    return observable
+    return iif(
+      () => Number.isInteger(sliceCount) && this._historySettings.has(type),
+      this._getStreamWithSlicedHistory(type, sliceCount),
+      currentStream,
+    )
   }
 
   getMainStream() {
     return this._subjectsEmitter.asObservable();
   }
 
-  emit(event: Event): void {
-    this._createStreamIfNotExists(event.type)
+  emit({ type, payload }: Event): void {
+    const currentStream = this._selectStream(type)
 
-    this._streams.get(event.type).next(event)
+    currentStream.next({ type, payload })
   }
 
-  _createStreamIfNotExists(type: EventType) {
+  _getStreamWithSlicedHistory = (type: EventType, sliceCount: number): Observable => {
+    const historyLengthForStream = this._historySettings.get(type)
+    const eventsToSkip = historyLengthForStream - sliceCount
+
+    return this._selectStream(type)
+      .pipe(skip(eventsToSkip))
+      .asObservable()
+  }
+
+  _selectStream(type: EventType) {
     if (!this._streams.has(type)) {
       this._addNewStream(type, new Subject())
     }
+
+    return this._streams.get(type)
   }
 
   _updateMainStream(type: EventType) {
