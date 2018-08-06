@@ -1,6 +1,6 @@
 # rxjs-event-bus
 
-## Что это такое
+## Что это такое?
 
 Это шина событий, написанная на [rxjs](https://github.com/ReactiveX/rxjs)
 
