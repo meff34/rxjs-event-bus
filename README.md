@@ -66,7 +66,7 @@ bus
   .getMainStream()
   .subscribe(log)
 
-// вот теперь мы готовы получать события ВСЕ события
+// вот теперь мы готовы получать события. ВСЕ события
 bus.emit({ type: 'first_event_name', payload: 2 })
 bus.emit({ type: 'second_event_name', payload: 1 })
 bus.emit({ type: 'third_event_name', payload: 1 })
