@@ -3,7 +3,7 @@
 import { Subject, Observable, ReplaySubject } from 'rxjs'
 import { mergeAll, skip } from 'rxjs/operators';
 
-type EventType = 'trading_signals:add' | 'trading_signals:remove' | 'event'
+type EventType = 'event:type_1' | 'event:type_2'
 
 type Event = {
   type: EventType,

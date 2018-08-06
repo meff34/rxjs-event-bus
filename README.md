@@ -1,6 +1,6 @@
 # rxjs-event-bus
 
-## Что это такое
+## Что это такое?
 
 Это шина событий, написанная на [rxjs](https://github.com/ReactiveX/rxjs)
 
@@ -22,7 +22,7 @@
 const log = (() => {
   let counter = 0;
   return event =>
-    console.log(`${++counter}: type: ${event.type}, value: ${event.payload}`)
+    console.log(`${++counter}: type: ${event.type}, payload: ${event.payload}`)
 })()
 ```
 
@@ -49,9 +49,9 @@ bus.emit({ type: 'second_event_name', payload: 2 })
 /*
 console output:
 
-1. type: first_event_name, value: 2
-2. type: second_event_name, value: 1
-3. type: second_event_name, value: 2
+1. type: first_event_name, payload: 2
+2. type: second_event_name, payload: 1
+3. type: second_event_name, payload: 2
 */
 ```
 
@@ -66,7 +66,7 @@ bus
   .getMainStream()
   .subscribe(log)
 
-// вот теперь мы готовы получать события ВСЕ события
+// вот теперь мы готовы получать события. ВСЕ события
 bus.emit({ type: 'first_event_name', payload: 2 })
 bus.emit({ type: 'second_event_name', payload: 1 })
 bus.emit({ type: 'third_event_name', payload: 1 })
@@ -74,9 +74,9 @@ bus.emit({ type: 'third_event_name', payload: 1 })
 /*
 console output:
 
-1. type: first_event_name, value: 2
-2. type: second_event_name, value: 1
-3. type: third_event_name, value: 1
+1. type: first_event_name, payload: 2
+2. type: second_event_name, payload: 1
+3. type: third_event_name, payload: 1
 */
 ```
 
@@ -116,11 +116,11 @@ bus.emit({ type: 'second_event_name', payload: 4 })
 /*
 console output:
 
-1. type: first_event_name, value: 2
-2. type: first_event_name, value: 3
-3. type: second_event_name, value: 3
-4. type: first_event_name, value: 4
-5. type: second_event_name, value: 4
+1. type: first_event_name, payload: 2
+2. type: first_event_name, payload: 3
+3. type: second_event_name, payload: 3
+4. type: first_event_name, payload: 4
+5. type: second_event_name, payload: 4
 */
 
 ```
@@ -153,11 +153,11 @@ bus.emit({ type: 'second_event_name', payload: 4 })
 /*
 console output:
 
-1: type: first_event_name, value: 2
-2: type: first_event_name, value: 3
-3: type: second_event_name, value: 3
-4: type: first_event_name, value: 4
-5: type: second_event_name, value: 4
+1: type: first_event_name, payload: 2
+2: type: first_event_name, payload: 3
+3: type: second_event_name, payload: 3
+4: type: first_event_name, payload: 4
+5: type: second_event_name, payload: 4
 */
 
 ```
