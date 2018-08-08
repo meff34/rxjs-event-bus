@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "babel src -d lib -s --presets=flow,latest,stage-0",
-    "babel-node": "babel-node --presets=flow,latest,stage-0",
+    "build": "babel src -d lib -s",
+    "babel-node": "babel-node",
     "start": "nodemon --exec npm run babel-node -- ./src/index.js",
     "test": "jest --watch"
   },
@@ -36,15 +36,5 @@
   "jest": {
     "verbose": true,
     "testURL": "http://localhost/"
-  },
-  "babel": {
-    "plugins": [
-      "syntax-class-properties",
-      "transform-flow-strip-types"
-    ],
-    "presets": [
-      "flow",
-      "stage-0"
-    ]
   }
 }
